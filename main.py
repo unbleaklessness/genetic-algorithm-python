@@ -137,7 +137,7 @@ def product(list):
     return result
 
 def griewankFunction(*xs):
-    return 1 + (1 / 4000) * sum([x ** 2 for x in xs]) - product([cmath.cos(x / cmath.sqrt(complex(0, 1))) for x in xs])
+    return 1 + (1 / 4000) * sum([x ** 2 for x in xs]) - product([cmath.cos(x / cmath.sqrt(1j)) for x in xs])
 
 def objective(*xs):
     return -abs(griewankFunction(*xs))
