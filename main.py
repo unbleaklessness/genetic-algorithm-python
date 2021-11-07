@@ -2,14 +2,20 @@ import random
 import enum
 import time
 import cmath
+import math
 
 class Chromosome:
 
-    def __init__(self, nGenes, f):
+    class MutationType(enum.Enum):
+        TYPE_1 = 1
+        TYPE_2 = 2
+
+    def __init__(self, nGenes, f, mutationType):
         self.nGenes = nGenes
         self.genes = []
         self.f = f
         self.fitness = 0
+        self.mutationType = mutationType
 
         for i in range(self.nGenes):
             self.genes.append(random.uniform(100, 200))
@@ -19,15 +25,25 @@ class Chromosome:
 
     def mutate(self):
 
-        # if random.uniform(0, 1) < 0.75:
-        #     return
+        if self.mutationType == self.MutationType.TYPE_1:
 
-        mutationPoint = random.randint(0, self.nGenes - 1)
+            mutationPoint = random.randint(0, self.nGenes - 1)
 
-        magnitude = 0.1
-        value = random.uniform(-magnitude, magnitude)
+            magnitude = 10
+            value = random.uniform(-magnitude, magnitude)
 
-        self.genes[mutationPoint] = self.genes[mutationPoint] + value
+            self.genes[mutationPoint] = self.genes[mutationPoint] + value
+
+        elif self.mutationType == self.MutationType.TYPE_2:
+
+            for i in range(self.nGenes):
+                if random.uniform(0, 1) < 0.5:
+                    continue
+
+                magnitude = 6
+                value = random.uniform(-magnitude, magnitude)
+
+                self.genes[i] = self.genes[i] + value
 
 class Pool:
 
@@ -38,7 +54,7 @@ class Pool:
         self.f = f
 
         for i in range(self.nChromosomes):
-            self.chromosomes.append(Chromosome(self.nGenes, self.f))
+            self.chromosomes.append(Chromosome(self.nGenes, self.f, Chromosome.MutationType.TYPE_2))
 
     def calculateFitness(self):
         for i in range(self.nChromosomes):
@@ -69,7 +85,7 @@ class Genetic:
         self.pool.calculateFitness()
         self.pool.sortByFitness()
 
-        while (self.getFittest().fitness < -0.0001):
+        while (self.getFittest().fitness < -1e-9):
 
             self.generationCount += 1
 
@@ -137,11 +153,11 @@ def product(list):
     return result
 
 def griewankFunction(*xs):
-    return 1 + (1 / 4000) * sum([x ** 2 for x in xs]) - product([cmath.cos(x / cmath.sqrt(1j)) for x in xs])
+    return 1 + (1 / 4000) * sum([x ** 2 for x in xs]) - product([math.cos(x / math.sqrt(i + 1)) for i, x in enumerate(xs)])
 
 def objective(*xs):
-    return -abs(griewankFunction(*xs))
+    return -griewankFunction(*xs)
 
 startTime = time.time()
-genetic = Genetic(10, 2, objective)
+genetic = Genetic(10, 3, objective)
 print("Elapsed {} seconds.".format(time.time() - startTime))
